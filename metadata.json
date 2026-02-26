@@ -1,0 +1,5 @@
+{
+  "name": "ReVoxMix Mobile",
+  "description": "A high-quality mobile radio streaming application for listening to RNE stations with live visualizers and HLS support.",
+  "requestFramePermissions": []
+}

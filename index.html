@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1e293b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ReVoxMix - Radio Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=VT323&family=Tahoma&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --winamp-bg: #475569;
+            --winamp-panel: #64748b;
+            --winamp-border-light: #94a3b8;
+            --winamp-border-dark: #1e293b;
+            --winamp-text: #00ff00;
+        }
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background-color: #334155;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .winamp-window {
+            background: var(--winamp-bg);
+            border-top: 2px solid var(--winamp-border-light);
+            border-left: 2px solid var(--winamp-border-light);
+            border-right: 2px solid var(--winamp-border-dark);
+            border-bottom: 2px solid var(--winamp-border-dark);
+            box-shadow: inset 1px 1px 0 #000;
+        }
+        .winamp-title-bar {
+            background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+            height: 16px;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 0 5px;
+            display: flex;
+            align-items: center;
+            color: #ccc;
+            letter-spacing: 1px;
+        }
+        .winamp-lcd {
+            background-color: #020617;
+            border: 1px solid #475569;
+            color: var(--winamp-text);
+            font-family: 'VT323', monospace;
+            box-shadow: inset 0 0 25px rgba(0, 255, 0, 0.15);
+        }
+        .winamp-btn {
+            background: #334155;
+            border-top: 1px solid #475569;
+            border-left: 1px solid #475569;
+            border-right: 2px solid #1e293b;
+            border-bottom: 2px solid #1e293b;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #ccc;
+            cursor: pointer;
+            box-shadow: 1px 1px 0 #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-height: 32px;
+        }
+        .winamp-btn:active {
+            border: 2px solid #000;
+            border-top: 2px solid #111;
+            border-left: 2px solid #111;
+            padding-top: 1px;
+            padding-left: 1px;
+            box-shadow: none;
+        }
+        .winamp-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #1e293b;
+            border: 1px solid #475569;
+            outline: none;
+            border-radius: 0;
+            box-shadow: inset 1px 1px 2px #000;
+        }
+        .winamp-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 32px;
+            height: 16px;
+            background: #c0c0c0;
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            border-right: 2px solid #333;
+            border-bottom: 2px solid #333;
+            cursor: pointer;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            border-radius: 1px;
+        }
+        .safe-top { padding-top: env(safe-area-inset-top); }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-200%); } }
+        @keyframes bounce { 0%, 100% { height: 3px; } 50% { height: 10px; } }
+        .animate-marquee { animation: marquee 20s linear infinite; }
+        .animate-bounce-custom { animation: bounce 0.4s infinite; }
+        .animate-bounce-custom-slow { animation: bounce 0.6s infinite; }
+        .animate-bounce-custom-fast { animation: bounce 0.3s infinite; }
+        
+        /* Media Query for very small screens */
+        @media (max-height: 600px) {
+            .winamp-lcd { height: 150px; min-height: 150px; }
+            .text-3xl { font-size: 1.5rem; line-height: 2rem; }
+        }
+        @media (max-width: 360px) {
+            .winamp-lcd { padding: 0.5rem; }
+            .text-3xl { font-size: 1.25rem; line-height: 1.75rem; }
+            .winamp-btn { font-size: 9px; padding-left: 0.5rem; padding-right: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="flex flex-col h-[100dvh] w-full bg-[#334155] overflow-hidden">
+        <div class="safe-top bg-[#1e293b]"></div>
+
+        <div class="p-2 space-y-2 max-w-lg mx-auto w-full flex-1 flex flex-col overflow-hidden">
+            <!-- MASTER RACK WINDOW -->
+            <div class="winamp-window flex flex-col shrink-0">
+                <div class="winamp-title-bar flex justify-between">
+                    <div class="flex items-center gap-1">
+                        <div class="w-2 h-2 bg-yellow-400 rotate-45"></div>
+                        <span class="truncate tracking-widest uppercase">REVOXMIX v5.8 - COMPACT MASTER</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span id="channel-indicator" class="text-[8px] text-gray-400 font-bold uppercase tracking-widest font-mono">CH-01</span>
+                        <div class="w-2.5 h-2.5 bg-[#ccc] border border-black/20"></div>
+                    </div>
+                </div>
+
+                <div class="p-2 space-y-2">
+                    <!-- LCD PANEL -->
+                    <div class="winamp-lcd p-3 flex flex-col relative min-h-[170px] h-[25vh] max-h-[220px] overflow-hidden rounded-sm shadow-[inset_0_0_30px_rgba(0,0,0,0.6)]">
+                        <!-- VU METER -->
+                        <div class="mb-2 bg-black/20 p-1.5 border border-slate-900/50 rounded-sm shrink-0">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-[6px] text-gray-700 font-bold uppercase tracking-[0.3em]">Stereo Signal Monitor</span>
+                                <div class="flex items-center gap-1.5">
+                                    <div id="playing-indicator" class="w-1.5 h-1.5 rounded-full bg-gray-800"></div>
+                                    <span class="text-[6px] text-[#00ff00]/40 font-mono">PEAK-LVL</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1 w-full">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[7px] font-mono text-gray-600 font-bold w-3">L</span>
+                                    <div id="vu-left" class="flex gap-[1px] h-2.5 w-full bg-[#0f172a] p-[1px] border border-slate-700 rounded-sm overflow-hidden"></div>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[7px] font-mono text-gray-600 font-bold w-3">R</span>
+                                    <div id="vu-right" class="flex gap-[1px] h-2.5 w-full bg-[#0f172a] p-[1px] border border-slate-700 rounded-sm overflow-hidden"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MAIN STATION INFO -->
+                        <div class="flex flex-col flex-1 justify-center min-h-0">
+                            <div class="flex justify-between items-start">
+                                <div class="flex flex-col overflow-hidden">
+                                    <div class="mb-0.5 text-[6px] text-gray-700 font-bold uppercase tracking-widest opacity-60">Receiving:</div>
+                                    <h1 id="current-station-name" class="text-3xl font-bold tracking-tighter text-[#00ff00] truncate font-mono uppercase leading-tight mb-2 drop-shadow-[0_0_6px_rgba(0,255,0,0.4)]">
+                                        CARGANDO...
+                                    </h1>
+                                </div>
+                                <button id="favorite-btn" class="mt-1 p-1.5 rounded-sm border border-gray-800 text-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-2 border-t border-gray-900 pt-2 mb-2">
+                                <div class="flex flex-col">
+                                    <span class="text-[6px] text-gray-700 font-bold uppercase tracking-widest mb-0.5">Bitrate/Codec</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span id="codec-indicator" class="text-[8px] text-[#ffff00] font-mono">PCM</span>
+                                        <span id="bitrate-indicator" class="text-[8px] text-[#00ff00] font-mono">128KBPS</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-[6px] text-gray-700 font-bold uppercase tracking-widest mb-0.5">Stream Quality</span>
+                                    <div id="quality-container">
+                                        <span class="text-[8px] text-gray-600 font-mono uppercase">Standard</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-auto pt-2 border-t border-gray-900 opacity-60">
+                                <p id="current-station-desc" class="text-[9px] text-[#00ff00] font-mono leading-none italic uppercase truncate">
+                                    ESPERANDO SELECCIÓN...
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- LOADING OVERLAY -->
+                        <div id="loading-overlay" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center z-20 hidden">
+                            <div class="w-8 h-8 border-[2px] border-t-[#00ff00] border-gray-900 rounded-full animate-spin mb-3"></div>
+                            <span class="text-[8px] font-mono tracking-[0.4em] text-[#00ff00] animate-pulse uppercase">Syncing Stream...</span>
+                        </div>
+                    </div>
+
+                    <!-- MARQUEE -->
+                    <div class="bg-[#1e293b] border border-slate-600 h-5 flex items-center px-2 overflow-hidden rounded-sm">
+                        <div id="marquee-text" class="whitespace-nowrap animate-marquee text-[9px] text-[#00ff00] font-mono uppercase tracking-[0.2em] opacity-80">
+                            BIENVENIDO A REVOXMIX • SELECCIONA UNA EMISORA PARA COMENZAR • 
+                        </div>
+                    </div>
+
+                    <!-- CONTROLS -->
+                    <div class="flex flex-col gap-2 bg-[#334155] p-2 rounded-sm border border-slate-600 shadow-inner">
+                        <div class="flex items-center gap-3">
+                            <div class="flex flex-col flex-1 gap-1">
+                                <div class="flex justify-between text-[8px] text-gray-400 font-bold uppercase tracking-wider">
+                                    <span>Main Gain</span>
+                                    <span id="volume-label" class="text-[#00ff00] font-mono">80%</span>
+                                </div>
+                                <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="0.8" class="winamp-slider w-full" />
+                            </div>
+                            <button id="reload-btn" class="winamp-btn w-10 h-8 text-[#00ff00]">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <div class="flex gap-1">
+                            <button id="toggle-favorites-btn" class="winamp-btn flex-1 py-1.5 text-[8px] font-bold">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                                FAVORITES
+                            </button>
+                            <button id="timer-btn" class="winamp-btn flex-1 py-1.5 text-[8px] font-bold">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                TIMER
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLAYLIST -->
+            <div class="winamp-window flex flex-col flex-1 overflow-hidden min-h-0">
+                <div class="winamp-title-bar flex justify-between items-center">
+                    <span id="playlist-title">AVAILABLE CHANNELS REPOSITORY</span>
+                </div>
+                <div id="playlist-container" class="flex-1 overflow-y-auto p-1 hide-scrollbar bg-[#1e293b]">
+                    <div id="station-list" class="flex flex-col gap-[1px]">
+                        <!-- Stations will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TRANSPORT BAR -->
+            <div class="winamp-window p-3 flex justify-between items-center safe-bottom shrink-0">
+                <div class="flex gap-2 w-full">
+                    <button id="play-btn" class="winamp-btn flex-1 py-3 font-bold text-[12px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        PLAY
+                    </button>
+                    <button id="stop-btn" class="winamp-btn px-6 py-3 text-[12px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect width="18" height="18" x="3" y="3" rx="2"></rect></svg>
+                        STOP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIMER MODAL -->
+    <div id="timer-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
+        <div class="winamp-window w-full max-w-xs p-4 space-y-4">
+            <div class="winamp-title-bar flex justify-between">
+                <span>SLEEP TIMER CONFIG</span>
+                <button onclick="closeTimerModal()" class="text-[8px]">X</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="setTimer(15)" class="winamp-btn py-2 text-[10px] font-bold">15 MINS</button>
+                <button onclick="setTimer(30)" class="winamp-btn py-2 text-[10px] font-bold">30 MINS</button>
+                <button onclick="setTimer(45)" class="winamp-btn py-2 text-[10px] font-bold">45 MINS</button>
+                <button onclick="setTimer(60)" class="winamp-btn py-2 text-[10px] font-bold">60 MINS</button>
+                <button onclick="setTimer(90)" class="winamp-btn py-2 text-[10px] font-bold">90 MINS</button>
+                <button onclick="setTimer(120)" class="winamp-btn py-2 text-[10px] font-bold">120 MINS</button>
+            </div>
+            <button onclick="setTimer(null)" class="winamp-btn w-full py-2 text-[10px] font-bold text-red-400">DISABLE TIMER</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const STATIONS = [
+            { id: 'rne-radio1', name: 'Radio Nacional CV', url: 'https://rnelivestream.rtve.es/rne1/val/master.m3u8?idasset=3893537', bitrate: '128kbps', description: 'La radio de todos - RNE 1 Comunidad Valenciana', color: '#E30613' },
+            { id: 'rne-clasica', name: 'Radio Clásica', url: 'https://rtvelivestream.rtve.es/rtvesec/rne/rne_r2_main.m3u8', bitrate: '192kbps', description: 'La mejor música clásica', color: '#E30613' },
+            { id: 'rne-radio3', name: 'Radio 3', url: 'https://rtvelivestream.rtve.es/rtvesec/rne/rne_r3_main.m3u8', bitrate: '192kbps', description: 'Cultura, música y creatividad', color: '#E30613' },
+            { id: 'rne-radio5-ali', name: 'Radio 5 Alicante', url: 'https://rnelivestream.rtve.es/rne5/ali/master.m3u8?idasset=6116423', bitrate: '128kbps', description: 'Información continua las 24h - Territorio Alicante', color: '#E30613' },
+            { id: 'ser-alicante', name: 'SER ALICANTE', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ALICANTEAAC.aac', bitrate: 'AAC', description: 'Cadena SER - Alicante', color: '#333399' },
+            { id: 'cope-alicante', name: 'COPE ALICANTE', url: 'https://alicante-copesedes-rrcast.flumotion.com/copesedes/alicante.mp3', bitrate: '128kbps', description: 'Cadena COPE - Alicante', color: '#333399' },
+            { id: 'ondacero-cv', name: 'ONDA CERO CV', url: 'https://atres-live.ondacero.es/live/delegaciones/oc/valenciaeventos/master.m3u8', bitrate: '128kbps', description: 'Onda Cero - Comunidad Valenciana', color: '#008e43' },
+            { id: 'radio-marca', name: 'RADIO MARCA', url: 'http://relay.stream.enacast-cloud.com:8000/marcalinkdelegaciones256.mp3', bitrate: '256kbps', description: 'El deporte en directo', color: '#FF0000' },
+            { id: 'radio-espana', name: 'RADIO ESPAÑA', url: 'https://stream-151.zeno.fm/7ywx2u45vv8uv', bitrate: '128kbps', description: 'Emisora generalista española', color: '#FFD700' },
+            { id: 'intereconomia', name: 'RADIO INTERECONOMIA', url: 'https://streaming.intereconomia.com/siliconorg', bitrate: '128kbps', description: 'Información económica y financiera', color: '#004a99' },
+            { id: 'ser-alcoy', name: 'SER ALCOY', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ASO_ALCOYAAC.aac', bitrate: 'AAC', description: 'Cadena SER - Alcoy', color: '#333399' },
+            { id: 'ser-denia', name: 'SER DENIA', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ASO_DENIAAAC.aac', bitrate: 'AAC', description: 'Cadena SER - Denia', color: '#333399' },
+            { id: 'ser-elche', name: 'SER ELCHE', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ASO_ELCHE.mp3', bitrate: '128kbps', description: 'Cadena SER - Elche', color: '#333399' },
+            { id: 'ser-elda', name: 'SER ELDA', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ASO_ELDA.mp3', bitrate: '128kbps', description: 'Cadena SER - Elda', color: '#333399' },
+            { id: 'ser-mas-alicante', name: 'SER + ALICANTE', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MAS_ALICANTE.mp3', bitrate: '128kbps', description: 'Cadena SER Plus - Alicante', color: '#333399' },
+            { id: 'ser-mas-alcoy', name: 'SER + ALCOY', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MAS_ASO_ALCOY.mp3', bitrate: '128kbps', description: 'Cadena SER Plus - Alcoy', color: '#333399' },
+            { id: 'ser-villena', name: 'SER VILLENA', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_VILLENA.mp3', bitrate: '128kbps', description: 'Cadena SER - Villena', color: '#333399' },
+            { id: 'umh-radio', name: 'UMH RADIO', url: 'https://laradioendirecto.umh.es/;', bitrate: '128kbps', description: 'Radio de la Universidad Miguel Hernández', color: '#990000' },
+            { id: 'flamenca-alicante', name: 'FLAMENCA ALICANTE', url: 'https://stream2.mediasector.es/laflamenca-alicante-DAB', bitrate: 'DAB', description: 'La mejor música flamenca en Alicante', color: '#FF4500' },
+            { id: 'bikini-alicante', name: 'BIKINI ALICANTE', url: 'https://stream2.mediasector.es/bikini-alicante-BR384', bitrate: '384kbps', description: 'Música veraniega y éxitos en Alicante', color: '#00CED1' }
+        ];
+
+        // --- STATE ---
+        let currentStation = STATIONS[0];
+        let isPlaying = false;
+        let volume = 0.8;
+        let favorites = JSON.parse(localStorage.getItem('revoxmix_favorites') || '[]');
+        let showFavorites = false;
+        let sleepTimer = null;
+        let sleepTimerInterval = null;
+
+        // Audio Context & Visualizer
+        let audioContext = null;
+        let source = null;
+        let analyserL = null;
+        let analyserR = null;
+        let gainNode = null;
+        let hls = null;
+        const audioTag = new Audio();
+        audioTag.crossOrigin = "anonymous";
+
+        // --- DOM ELEMENTS ---
+        const stationNameEl = document.getElementById('current-station-name');
+        const stationDescEl = document.getElementById('current-station-desc');
+        const marqueeEl = document.getElementById('marquee-text');
+        const playBtn = document.getElementById('play-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeLabel = document.getElementById('volume-label');
+        const stationListEl = document.getElementById('station-list');
+        const favoriteBtn = document.getElementById('favorite-btn');
+        const toggleFavoritesBtn = document.getElementById('toggle-favorites-btn');
+        const timerBtn = document.getElementById('timer-btn');
+        const timerModal = document.getElementById('timer-modal');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const playingIndicator = document.getElementById('playing-indicator');
+        const codecIndicator = document.getElementById('codec-indicator');
+        const bitrateIndicator = document.getElementById('bitrate-indicator');
+        const channelIndicator = document.getElementById('channel-indicator');
+
+        // --- INITIALIZATION ---
+        function init() {
+            renderStations();
+            updateStationUI();
+            
+            volumeSlider.addEventListener('input', (e) => {
+                volume = parseFloat(e.target.value);
+                audioTag.volume = volume;
+                volumeLabel.textContent = Math.round(volume * 100) + '%';
+            });
+
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopAudio);
+            favoriteBtn.addEventListener('click', toggleFavorite);
+            toggleFavoritesBtn.addEventListener('click', () => {
+                showFavorites = !showFavorites;
+                toggleFavoritesBtn.classList.toggle('bg-[#000080]', showFavorites);
+                toggleFavoritesBtn.classList.toggle('text-[#00ff00]', showFavorites);
+                toggleFavoritesBtn.classList.toggle('border-[#00ff00]', showFavorites);
+                document.getElementById('playlist-title').textContent = showFavorites ? 'FAVORITE CHANNELS' : 'AVAILABLE CHANNELS REPOSITORY';
+                renderStations();
+            });
+            timerBtn.addEventListener('click', () => timerModal.classList.remove('hidden'));
+            document.getElementById('reload-btn').addEventListener('click', () => window.location.reload());
+
+            // VU Meter Setup
+            setupVUMeters();
+            requestAnimationFrame(updateVUMeters);
+        }
+
+        function setupVUMeters() {
+            const leftVu = document.getElementById('vu-left');
+            const rightVu = document.getElementById('vu-right');
+            for (let i = 0; i < 32; i++) {
+                leftVu.innerHTML += '<div class="flex-1 h-full bg-[#050a1f] transition-colors duration-75"></div>';
+                rightVu.innerHTML += '<div class="flex-1 h-full bg-[#050a1f] transition-colors duration-75"></div>';
+            }
+        }
+
+        function updateVUMeters() {
+            if (analyserL && analyserR && isPlaying) {
+                const dataL = new Uint8Array(analyserL.frequencyBinCount);
+                const dataR = new Uint8Array(analyserR.frequencyBinCount);
+                analyserL.getByteFrequencyData(dataL);
+                analyserR.getByteFrequencyData(dataR);
+
+                let sumL = 0; let sumR = 0;
+                for(let i=0; i<dataL.length; i++) sumL += dataL[i];
+                for(let i=0; i<dataR.length; i++) sumR += dataR[i];
+                
+                const levelL = (sumL / dataL.length) / 255 * 2.5;
+                const levelR = (sumR / dataR.length) / 255 * 2.5;
+
+                updateBar('vu-left', levelL);
+                updateBar('vu-right', levelR);
+            } else {
+                updateBar('vu-left', 0);
+                updateBar('vu-right', 0);
+            }
+            requestAnimationFrame(updateVUMeters);
+        }
+
+        function updateBar(id, level) {
+            const container = document.getElementById(id);
+            const bars = container.children;
+            const segments = bars.length;
+            for (let i = 0; i < segments; i++) {
+                const isActive = (i / segments) < level;
+                const bar = bars[i];
+                if (isActive) {
+                    if (i > segments * 0.85) bar.className = "flex-1 h-full bg-red-500 shadow-[0_0_8px_#ef4444]";
+                    else if (i > segments * 0.6) bar.className = "flex-1 h-full bg-yellow-400 shadow-[0_0_8px_#facc15]";
+                    else bar.className = "flex-1 h-full bg-emerald-500 shadow-[0_0_8px_#10b981]";
+                } else {
+                    bar.className = "flex-1 h-full bg-[#050a1f]";
+                }
+            }
+        }
+
+        // --- AUDIO LOGIC ---
+        function setupAudioContext() {
+            if (audioContext) return;
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            source = audioContext.createMediaElementSource(audioTag);
+            
+            analyserL = audioContext.createAnalyser();
+            analyserR = audioContext.createAnalyser();
+            const splitter = audioContext.createChannelSplitter(2);
+            
+            source.connect(splitter);
+            splitter.connect(analyserL, 0);
+            splitter.connect(analyserR, 1);
+            
+            source.connect(audioContext.destination);
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
+
+        async function playAudio() {
+            setupAudioContext();
+            if (audioContext.state === 'suspended') await audioContext.resume();
+
+            loadingOverlay.classList.remove('hidden');
+            
+            const url = currentStation.url;
+            if (url.includes('.m3u8')) {
+                if (Hls.isSupported()) {
+                    if (hls) hls.destroy();
+                    hls = new Hls();
+                    hls.loadSource(url);
+                    hls.attachMedia(audioTag);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => audioTag.play());
+                } else if (audioTag.canPlayType('application/vnd.apple.mpegurl')) {
+                    audioTag.src = url;
+                    audioTag.play();
+                }
+                codecIndicator.textContent = 'HLS';
+            } else {
+                if (hls) { hls.destroy(); hls = null; }
+                audioTag.src = url;
+                audioTag.play();
+                codecIndicator.textContent = 'PCM';
+            }
+
+            audioTag.onplaying = () => {
+                isPlaying = true;
+                loadingOverlay.classList.add('hidden');
+                updateUI();
+            };
+
+            audioTag.onerror = () => {
+                loadingOverlay.classList.add('hidden');
+                alert("Error al cargar el streaming.");
+                stopAudio();
+            };
+        }
+
+        function pauseAudio() {
+            audioTag.pause();
+            isPlaying = false;
+            updateUI();
+        }
+
+        function stopAudio() {
+            audioTag.pause();
+            audioTag.src = "";
+            if (hls) { hls.destroy(); hls = null; }
+            isPlaying = false;
+            updateUI();
+        }
+
+        // --- UI UPDATES ---
+        function updateUI() {
+            playBtn.innerHTML = isPlaying 
+                ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect width="4" height="16" x="6" y="4"></rect><rect width="4" height="16" x="14" y="4"></rect></svg> PAUSE'
+                : '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> PLAY';
+            
+            playBtn.classList.toggle('bg-[#004400]', isPlaying);
+            playBtn.classList.toggle('text-[#00ff00]', isPlaying);
+            playBtn.classList.toggle('border-[#00ff00]', isPlaying);
+            
+            playingIndicator.classList.toggle('bg-[#00ff00]', isPlaying);
+            playingIndicator.classList.toggle('shadow-[0_0_5px_#00ff00]', isPlaying);
+            playingIndicator.classList.toggle('bg-gray-800', !isPlaying);
+
+            renderStations();
+        }
+
+        function updateStationUI() {
+            stationNameEl.textContent = currentStation.name;
+            stationDescEl.textContent = currentStation.description;
+            bitrateIndicator.textContent = currentStation.bitrate.toUpperCase();
+            marqueeEl.textContent = `${currentStation.name} • ${currentStation.bitrate} • ${currentStation.description} • HI-FIDELITY AUDIO FLOW • `;
+            
+            const index = STATIONS.findIndex(s => s.id === currentStation.id);
+            channelIndicator.textContent = `CH-${(index + 1).toString().padStart(2, '0')}`;
+
+            const isFav = favorites.some(f => f.id === currentStation.id);
+            favoriteBtn.classList.toggle('text-yellow-400', isFav);
+            favoriteBtn.classList.toggle('border-yellow-400', isFav);
+            favoriteBtn.classList.toggle('text-gray-700', !isFav);
+            favoriteBtn.classList.toggle('border-gray-800', !isFav);
+        }
+
+        function renderStations() {
+            const list = showFavorites ? favorites : STATIONS;
+            stationListEl.innerHTML = '';
+            list.forEach((station, index) => {
+                const isActive = currentStation.id === station.id;
+                const isFav = favorites.some(f => f.id === station.id);
+                
+                const item = document.createElement('div');
+                item.className = `flex items-center h-14 cursor-pointer border-y px-3 gap-3 transition-all ${
+                    isActive 
+                        ? 'bg-[#000080] border-[#00ff00] text-[#00ff00] z-10 shadow-[inset_0_0_10px_rgba(0,255,0,0.1)]' 
+                        : 'bg-[#334155] border-transparent hover:bg-[#475569] text-slate-200'
+                }`;
+                
+                item.innerHTML = `
+                    <span class="text-[10px] font-mono w-5 ${isActive ? 'opacity-100 font-bold' : 'opacity-50'}">
+                        ${(index + 1).toString().padStart(2, '0')}
+                    </span>
+                    <div class="flex-1 flex flex-col justify-center overflow-hidden">
+                        <span class="text-xs font-bold truncate tracking-wide uppercase font-mono">${station.name}</span>
+                        <span class="text-[8px] truncate italic uppercase opacity-40">${station.description}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="fav-star p-1.5 rounded-sm transition-all ${isFav ? 'text-yellow-400' : 'text-gray-700 opacity-30 hover:opacity-100'}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </button>
+                    </div>
+                    ${isActive && isPlaying ? `
+                        <div class="flex gap-[1.5px] items-end h-3 pr-1">
+                            <div class="w-1 bg-[#00ff00] h-full animate-bounce-custom"></div>
+                            <div class="w-1 bg-[#00ff00] h-2/3 animate-bounce-custom-slow"></div>
+                            <div class="w-1 bg-[#00ff00] h-full animate-bounce-custom-fast"></div>
+                        </div>
+                    ` : ''}
+                `;
+
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.fav-star')) {
+                        toggleFavoriteStation(station);
+                    } else {
+                        selectStation(station);
+                    }
+                });
+                stationListEl.appendChild(item);
+            });
+        }
+
+        function selectStation(station) {
+            currentStation = station;
+            updateStationUI();
+            stopAudio();
+            playAudio();
+        }
+
+        // --- FAVORITES ---
+        function toggleFavorite() {
+            toggleFavoriteStation(currentStation);
+        }
+
+        function toggleFavoriteStation(station) {
+            const index = favorites.findIndex(f => f.id === station.id);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push(station);
+            }
+            localStorage.setItem('revoxmix_favorites', JSON.stringify(favorites));
+            updateStationUI();
+            renderStations();
+        }
+
+        // --- TIMER ---
+        function setTimer(mins) {
+            if (sleepTimerInterval) clearInterval(sleepTimerInterval);
+            if (mins === null) {
+                sleepTimer = null;
+                timerBtn.classList.remove('text-[#ffff00]', 'border-[#ffff00]');
+                timerBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> TIMER';
+            } else {
+                sleepTimer = mins;
+                timerBtn.classList.add('text-[#ffff00]', 'border-[#ffff00]');
+                timerBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> TIMER (${sleepTimer}M)`;
+                
+                sleepTimerInterval = setInterval(() => {
+                    sleepTimer--;
+                    if (sleepTimer <= 0) {
+                        stopAudio();
+                        setTimer(null);
+                    } else {
+                        timerBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> TIMER (${sleepTimer}M)`;
+                    }
+                }, 60000);
+            }
+            closeTimerModal();
+        }
+
+        function closeTimerModal() {
+            timerModal.classList.add('hidden');
+        }
+
+        // --- START ---
+        init();
+    </script>
+</body>
+</html>
