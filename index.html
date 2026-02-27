@@ -258,7 +258,7 @@
             <!-- PLAYLIST -->
             <div class="winamp-window flex flex-col flex-1 overflow-hidden min-h-0">
                 <div class="winamp-title-bar flex justify-between items-center">
-                    <span id="playlist-title">AVAILABLE CHANNELS REPOSITORY</span>
+                    <span id="playlist-title">STREAM DE RADIO EN ALICANTE</span>
                 </div>
                 <div id="playlist-container" class="flex-1 overflow-y-auto p-1 hide-scrollbar bg-[#0f172a]">
                     <div id="station-list" class="flex flex-col gap-[1px]">
@@ -338,8 +338,8 @@
             { id: 'rne-radio5-ali', name: 'Radio 5 Alicante', url: 'https://rnelivestream.rtve.es/rne5/ali/master.m3u8?idasset=6116423', bitrate: '128kbps', description: 'Información continua las 24h - Territorio Alicante', color: '#E30613' },
             { id: 'ser-alicante', name: 'SER ALICANTE', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ALICANTEAAC.aac', bitrate: 'AAC', description: 'Cadena SER - Alicante', color: '#333399' },
             { id: 'cope-alicante', name: 'COPE ALICANTE', url: 'https://alicante-copesedes-rrcast.flumotion.com/copesedes/alicante.mp3', bitrate: '128kbps', description: 'Cadena COPE - Alicante', color: '#333399' },
-            { id: 'ondacero-cv', name: 'ONDA CERO CV', url: 'https://atres-live.ondacero.es/live/delegaciones/oc/valenciaeventos/master.m3u8', bitrate: '128kbps', description: 'Onda Cero - Comunidad Valenciana', color: '#008e43' },
-            { id: 'radio-marca', name: 'RADIO MARCA', url: 'http://relay.stream.enacast-cloud.com:8000/marcalinkdelegaciones256.mp3', bitrate: '256kbps', description: 'El deporte en directo', color: '#FF0000' },
+            { id: 'ondacero-ali', name: 'ONDA CERO ALICANTE', url: 'https://atres-live.ondacero.es/live/delegaciones/oc/alicante/master.m3u8', bitrate: '128kbps', description: 'Onda Cero - Alicante', color: '#008e43' },
+            { id: 'radio-marca-elche', name: 'RADIO MARCA ELCHE', url: 'https://directo.teleelx.es:8000/radio.mp3', bitrate: '128kbps', description: 'Radio Marca Elche - El deporte en directo', color: '#FF0000' },
             { id: 'radio-espana', name: 'RADIO ESPAÑA', url: 'https://stream-151.zeno.fm/7ywx2u45vv8uv', bitrate: '128kbps', description: 'Emisora generalista española', color: '#FFD700' },
             { id: 'intereconomia', name: 'RADIO INTERECONOMIA', url: 'https://streaming.intereconomia.com/siliconorg', bitrate: '128kbps', description: 'Información económica y financiera', color: '#004a99' },
             { id: 'ser-alcoy', name: 'SER ALCOY', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ASO_ALCOYAAC.aac', bitrate: 'AAC', description: 'Cadena SER - Alcoy', color: '#333399' },
@@ -424,7 +424,7 @@
                 toggleFavoritesBtn.classList.toggle('bg-cyan-900/40', showFavorites);
                 toggleFavoritesBtn.classList.toggle('text-[#00f3ff]', showFavorites);
                 toggleFavoritesBtn.classList.toggle('border-[#00f3ff]', showFavorites);
-                document.getElementById('playlist-title').textContent = showFavorites ? 'FAVORITE CHANNELS' : 'AVAILABLE CHANNELS REPOSITORY';
+                document.getElementById('playlist-title').textContent = showFavorites ? 'FAVORITE CHANNELS' : 'STREAM DE RADIO EN ALICANTE';
                 renderStations();
             });
             timerBtn.addEventListener('click', () => timerModal.classList.remove('hidden'));
@@ -515,41 +515,59 @@
         }
 
         async function playAudio() {
-            setupAudioContext();
-            if (audioContext.state === 'suspended') await audioContext.resume();
+            try {
+                setupAudioContext();
+                if (audioContext.state === 'suspended') await audioContext.resume();
+            } catch (e) {
+                console.warn("AudioContext initialization failed (likely iOS CORS restriction):", e);
+            }
 
             loadingOverlay.classList.remove('hidden');
             
             const url = currentStation.url;
+            
+            // Reset error handler to avoid persistent alerts
+            audioTag.onerror = (e) => {
+                // If src is empty, it's a manual stop, ignore
+                if (!audioTag.src || audioTag.src === window.location.href) return;
+                
+                loadingOverlay.classList.add('hidden');
+                console.error("Audio Error:", e);
+                // Only alert if it's a real loading error
+                if (isPlaying || loadingOverlay.classList.contains('hidden') === false) {
+                    alert("Error al cargar el streaming. Es posible que la emisora esté fuera de servicio temporalmente.");
+                }
+                stopAudio();
+            };
+
             if (url.includes('.m3u8')) {
                 if (Hls.isSupported()) {
                     if (hls) hls.destroy();
-                    hls = new Hls();
+                    hls = new Hls({
+                        enableWorker: true,
+                        lowLatencyMode: true,
+                    });
                     hls.loadSource(url);
                     hls.attachMedia(audioTag);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => audioTag.play());
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        audioTag.play().catch(err => console.error("Play failed:", err));
+                    });
                 } else if (audioTag.canPlayType('application/vnd.apple.mpegurl')) {
                     audioTag.src = url;
-                    audioTag.play();
+                    audioTag.play().catch(err => console.error("Play failed:", err));
                 }
                 codecIndicator.textContent = 'HLS';
             } else {
                 if (hls) { hls.destroy(); hls = null; }
                 audioTag.src = url;
-                audioTag.play();
-                codecIndicator.textContent = 'PCM';
+                audioTag.play().catch(err => console.error("Play failed:", err));
+                codecIndicator.textContent = 'MP3/AAC';
             }
 
             audioTag.onplaying = () => {
                 isPlaying = true;
                 loadingOverlay.classList.add('hidden');
                 updateUI();
-            };
-
-            audioTag.onerror = () => {
-                loadingOverlay.classList.add('hidden');
-                alert("Error al cargar el streaming.");
-                stopAudio();
             };
         }
 
@@ -560,11 +578,22 @@
         }
 
         function stopAudio() {
+            // Disable error handler before stopping to prevent "src empty" error
+            const oldError = audioTag.onerror;
+            audioTag.onerror = null;
+            
             audioTag.pause();
             audioTag.src = "";
+            audioTag.load(); // Force reset
+            
             if (hls) { hls.destroy(); hls = null; }
             isPlaying = false;
             updateUI();
+            
+            // Restore error handler after a short delay
+            setTimeout(() => {
+                audioTag.onerror = oldError;
+            }, 100);
         }
 
         // --- UI UPDATES ---
@@ -719,32 +748,52 @@
             pcmDataLeft = [];
             pcmDataRight = [];
             
-            const options = { mimeType: 'audio/webm;codecs=opus' };
-            
-            // Setup PCM capture for MP3
-            scriptProcessor = audioContext.createScriptProcessor(4096, 2, 2);
-            scriptProcessor.onaudioprocess = (e) => {
-                if (!isRecording) return;
-                const left = e.inputBuffer.getChannelData(0);
-                const right = e.inputBuffer.getChannelData(1);
-                pcmDataLeft.push(new Float32Array(left));
-                pcmDataRight.push(new Float32Array(right));
-            };
-            source.connect(scriptProcessor);
-            scriptProcessor.connect(audioContext.destination);
-
-            try {
-                mediaRecorder = new MediaRecorder(streamDestination.stream, options);
-            } catch (e) {
-                console.error("WebM not supported, trying default", e);
-                mediaRecorder = new MediaRecorder(streamDestination.stream);
+            // Ensure context is active for recording
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
             }
 
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    recordedChunks.push(event.data);
-                }
-            };
+            const options = { mimeType: 'audio/webm;codecs=opus' };
+            
+            // Setup PCM capture for MP3 (This is more reliable on iOS/Safari)
+            try {
+                scriptProcessor = audioContext.createScriptProcessor(4096, 2, 2);
+                scriptProcessor.onaudioprocess = (e) => {
+                    if (!isRecording) return;
+                    const left = e.inputBuffer.getChannelData(0);
+                    const right = e.inputBuffer.getChannelData(1);
+                    pcmDataLeft.push(new Float32Array(left));
+                    pcmDataRight.push(new Float32Array(right));
+                };
+                source.connect(scriptProcessor);
+                scriptProcessor.connect(audioContext.destination);
+            } catch (e) {
+                console.error("ScriptProcessor failed:", e);
+            }
+
+            try {
+                // MediaRecorder might fail on iOS if the stream is not "live" or CORS restricted
+                mediaRecorder = new MediaRecorder(streamDestination.stream, options);
+            } catch (e) {
+                console.warn("WebM/MediaRecorder failed, falling back to PCM only capture", e);
+                mediaRecorder = {
+                    state: 'inactive',
+                    start: () => { mediaRecorder.state = 'recording'; },
+                    stop: () => { 
+                        mediaRecorder.state = 'inactive';
+                        if (mediaRecorder.onstop) mediaRecorder.onstop();
+                    },
+                    mimeType: 'audio/wav' // Placeholder
+                };
+            }
+
+            if (mediaRecorder.ondataavailable !== undefined) {
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+            }
 
             mediaRecorder.onstop = () => {
                 if (scriptProcessor) {
@@ -773,18 +822,27 @@
         }
 
         function setupDownloadButtons() {
-            const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
-            const webmUrl = URL.createObjectURL(blob);
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const filename = `ReVoxMix_Rec_${currentStation.name}_${timestamp}`;
 
-            document.getElementById('download-webm').onclick = () => {
-                downloadFile(webmUrl, `${filename}.webm`);
-            };
+            // WEBM/OGG buttons only if we have chunks
+            const webmBtn = document.getElementById('download-webm');
+            const oggBtn = document.getElementById('download-ogg');
 
-            document.getElementById('download-ogg').onclick = () => {
-                downloadFile(webmUrl, `${filename}.ogg`);
-            };
+            if (recordedChunks.length > 0) {
+                const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType });
+                const webmUrl = URL.createObjectURL(blob);
+                
+                webmBtn.classList.remove('opacity-50', 'pointer-events-none');
+                oggBtn.classList.remove('opacity-50', 'pointer-events-none');
+                
+                webmBtn.onclick = () => downloadFile(webmUrl, `${filename}.webm`);
+                oggBtn.onclick = () => downloadFile(webmUrl, `${filename}.ogg`);
+            } else {
+                // If no chunks (iOS Safari often), disable these but keep MP3 as it uses PCM data
+                webmBtn.classList.add('opacity-50', 'pointer-events-none');
+                oggBtn.classList.add('opacity-50', 'pointer-events-none');
+            }
 
             document.getElementById('download-mp3').onclick = () => {
                 encodeMP3(filename);
