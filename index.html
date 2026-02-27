@@ -478,30 +478,29 @@
             let levelR = 0;
 
             if (analyserL && analyserR && isPlaying) {
-                const dataL = new Uint8Array(analyserL.fftSize);
-                const dataR = new Uint8Array(analyserR.fftSize);
-                analyserL.getByteTimeDomainData(dataL);
-                analyserR.getByteTimeDomainData(dataR);
+                const dataL = new Uint8Array(analyserL.frequencyBinCount);
+                const dataR = new Uint8Array(analyserR.frequencyBinCount);
+                analyserL.getByteFrequencyData(dataL);
+                analyserR.getByteFrequencyData(dataR);
 
+                // Calculate average of frequencies for a more "jumpy" VU feel
                 let sumL = 0;
                 let sumR = 0;
-                for (let i = 0; i < dataL.length; i++) {
-                    const valL = (dataL[i] - 128) / 128;
-                    const valR = (dataR[i] - 128) / 128;
-                    sumL += valL * valL;
-                    sumR += valR * valR;
+                // Focus on the first half of frequencies (bass/mids) for better visual beat
+                const len = Math.floor(dataL.length * 0.6);
+                for (let i = 0; i < len; i++) {
+                    sumL += dataL[i];
+                    sumR += dataR[i];
                 }
                 
-                // Calculate RMS and boost for visual impact
-                levelL = Math.sqrt(sumL / dataL.length) * 6.0;
-                levelR = Math.sqrt(sumR / dataR.length) * 6.0;
+                levelL = (sumL / len) / 255 * 1.8;
+                levelR = (sumR / len) / 255 * 1.8;
 
                 // Fallback for iOS if MediaElementSource is silent due to CORS
-                if (levelL < 0.001 && levelR < 0.001 && isPlaying) {
-                    // Simulate a more "musical" movement if real data is blocked
+                if (levelL < 0.02 && levelR < 0.02 && isPlaying) {
                     const time = Date.now() * 0.005;
-                    levelL = 0.1 + Math.abs(Math.sin(time)) * 0.25 + Math.random() * 0.1;
-                    levelR = 0.1 + Math.abs(Math.cos(time * 0.8)) * 0.25 + Math.random() * 0.1;
+                    levelL = 0.1 + Math.abs(Math.sin(time)) * 0.2 + Math.random() * 0.05;
+                    levelR = 0.1 + Math.abs(Math.cos(time * 0.8)) * 0.2 + Math.random() * 0.05;
                 }
             }
 
@@ -538,16 +537,16 @@
             gainNode.connect(audioContext.destination);
             
             try {
-                // Force crossOrigin before creating the source
+                // Ensure crossOrigin is set correctly
                 audioTag.crossOrigin = "anonymous";
                 source = audioContext.createMediaElementSource(audioTag);
                 
                 analyserL = audioContext.createAnalyser();
                 analyserR = audioContext.createAnalyser();
-                analyserL.fftSize = 1024;
-                analyserR.fftSize = 1024;
-                analyserL.smoothingTimeConstant = 0.8;
-                analyserR.smoothingTimeConstant = 0.8;
+                analyserL.fftSize = 256; // Smaller FFT for faster visual response
+                analyserR.fftSize = 256;
+                analyserL.smoothingTimeConstant = 0.5;
+                analyserR.smoothingTimeConstant = 0.5;
                 
                 const splitter = audioContext.createChannelSplitter(2);
                 streamDestination = audioContext.createMediaStreamDestination();
