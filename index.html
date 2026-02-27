@@ -493,15 +493,15 @@
                     sumR += dataR[i];
                 }
                 
-                levelL = (sumL / len) / 255 * 1.8;
-                levelR = (sumR / len) / 255 * 1.8;
+                levelL = (sumL / len) / 255 * 1.2;
+                levelR = (sumR / len) / 255 * 1.2;
 
                 // Fallback for iOS if MediaElementSource is silent due to CORS
                 // Only run if volume is above zero
                 if (levelL < 0.02 && levelR < 0.02 && isPlaying && volume > 0) {
                     const time = Date.now() * 0.005;
-                    levelL = 0.1 + Math.abs(Math.sin(time)) * 0.2 + Math.random() * 0.05;
-                    levelR = 0.1 + Math.abs(Math.cos(time * 0.8)) * 0.2 + Math.random() * 0.05;
+                    levelL = 0.05 + Math.abs(Math.sin(time)) * 0.15 + Math.random() * 0.03;
+                    levelR = 0.05 + Math.abs(Math.cos(time * 0.8)) * 0.15 + Math.random() * 0.03;
                 }
 
                 // Force zero if volume is zero
