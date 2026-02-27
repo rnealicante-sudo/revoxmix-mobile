@@ -407,6 +407,10 @@
         const recDot = document.getElementById('rec-dot');
         const recText = document.getElementById('rec-text');
         const recModal = document.getElementById('rec-modal');
+        
+        // Append audio tag to DOM (required for some browsers to analyze audio)
+        audioTag.style.display = 'none';
+        document.body.appendChild(audioTag);
 
         // --- INITIALIZATION ---
         function init() {
@@ -483,14 +487,16 @@
                 for(let i=0; i<dataL.length; i++) sumL += dataL[i];
                 for(let i=0; i<dataR.length; i++) sumR += dataR[i];
                 
-                levelL = (sumL / dataL.length) / 255 * 2.5;
-                levelR = (sumR / dataR.length) / 255 * 2.5;
+                // Increase sensitivity for radio streams which often have lower peaks in analysis
+                levelL = (sumL / dataL.length) / 255 * 4.0;
+                levelR = (sumR / dataR.length) / 255 * 4.0;
 
                 // Fallback for iOS if MediaElementSource is silent due to CORS
-                if (levelL === 0 && levelR === 0 && isPlaying) {
-                    // Simulate a very subtle movement to show it's "active" but blocked
-                    levelL = 0.05 + Math.random() * 0.1;
-                    levelR = 0.05 + Math.random() * 0.1;
+                if (levelL < 0.01 && levelR < 0.01 && isPlaying) {
+                    // Simulate a more "musical" movement if real data is blocked
+                    const time = Date.now() * 0.005;
+                    levelL = 0.1 + Math.abs(Math.sin(time)) * 0.2 + Math.random() * 0.1;
+                    levelR = 0.1 + Math.abs(Math.cos(time * 0.8)) * 0.2 + Math.random() * 0.1;
                 }
             }
 
@@ -591,17 +597,17 @@
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
             if (url.includes('.m3u8')) {
-                // On iOS, native HLS is always preferred for stability and CORS
-                if (isIOS && audioTag.canPlayType('application/vnd.apple.mpegurl')) {
-                    if (hls) { hls.destroy(); hls = null; }
-                    audioTag.src = url;
-                    audioTag.play().catch(err => console.error("Native iOS Play failed:", err));
-                } else if (Hls.isSupported()) {
+                // Try Hls.js first even on iOS to get modulation data via MSE if possible
+                if (Hls.isSupported()) {
                     if (hls) hls.destroy();
                     hls = new Hls({
                         enableWorker: true,
                         lowLatencyMode: true,
-                        backBufferLength: 60
+                        backBufferLength: 60,
+                        // Force anonymous crossOrigin for fragments
+                        xhrSetup: (xhr) => {
+                            xhr.withCredentials = false;
+                        }
                     });
                     hls.loadSource(url);
                     hls.attachMedia(audioTag);
@@ -609,8 +615,10 @@
                         audioTag.play().catch(err => console.error("Hls.js Play failed:", err));
                     });
                 } else if (audioTag.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Fallback to native HLS (analyser might be silent here if CORS headers are missing)
+                    if (hls) { hls.destroy(); hls = null; }
                     audioTag.src = url;
-                    audioTag.play().catch(err => console.error("Fallback Play failed:", err));
+                    audioTag.play().catch(err => console.error("Native iOS Play failed:", err));
                 }
                 codecIndicator.textContent = 'HLS';
             } else {
