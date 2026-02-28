@@ -258,7 +258,7 @@
             <!-- PLAYLIST -->
             <div class="winamp-window flex flex-col flex-1 overflow-hidden min-h-0">
                 <div class="winamp-title-bar flex justify-between items-center">
-                    <span id="playlist-title">STREAM DE RADIO EN ALICANTE</span>
+                    <span id="playlist-title">EMISORAS DE RADIO EN LA PROVINCIA DE ALICANTE</span>
                 </div>
                 <div id="playlist-container" class="flex-1 overflow-y-auto p-1 hide-scrollbar bg-[#0f172a]">
                     <div id="station-list" class="flex flex-col gap-[1px]">
@@ -338,8 +338,17 @@
             { id: 'rne-radio5-ali', name: 'Radio 5 Alicante', url: 'https://rnelivestream.rtve.es/rne5/ali/master.m3u8?idasset=6116423', bitrate: '128kbps', description: 'Información continua las 24h - Territorio Alicante', color: '#E30613' },
             { id: 'ser-alicante', name: 'SER ALICANTE', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ALICANTEAAC.aac', bitrate: 'AAC', description: 'Cadena SER - Alicante', color: '#333399' },
             { id: 'cope-alicante', name: 'COPE ALICANTE', url: 'https://alicante-copesedes-rrcast.flumotion.com/copesedes/alicante.mp3', bitrate: '128kbps', description: 'Cadena COPE - Alicante', color: '#333399' },
+            { id: 'cope-alcoy', name: 'COPE ALCOY', url: 'https://server8.emitironline.com:10876/;', bitrate: '128kbps', description: 'COPE Alcoy - Estar informado', color: '#333399' },
+            { id: 'cope-denia', name: 'COPE DENIA', url: 'https://wecast-bl02.flumotion.com/copesedes/denia.mp3', bitrate: '128kbps', description: 'COPE Denia - La radio de los clásicos', color: '#333399' },
+            { id: 'cope-elche', name: 'COPE ELCHE', url: 'https://stream-159.zeno.fm/fh1dewq8pxduv', bitrate: '128kbps', description: 'COPE Elche - La radio de Elche', color: '#333399' },
+            { id: 'cope-onda-naranja', name: 'COPE ONDA NARANJA', url: 'https://str1.mediatelekom.net:8100/stream', bitrate: '128kbps', description: 'Onda Naranja COPE - Gandia y comarca', color: '#333399' },
+            { id: 'radio-sirena-cope', name: 'RADIO SIRENA COPE', url: 'https://str1.mediatelekom.net/proxy/radiosirena/stream', bitrate: '128kbps', description: 'Radio Sirena COPE Benidorm', color: '#333399' },
             { id: 'ondacero-ali', name: 'ONDA CERO ALICANTE', url: 'https://atres-live.ondacero.es/live/delegaciones/oc/alicante/master.m3u8', bitrate: '128kbps', description: 'Onda Cero - Alicante', color: '#008e43' },
-            { id: 'ondacero-torrevieja', name: 'ONDA CERO TORREVIEJA', url: 'https://atres-live.ondacero.es/live/delegaciones/oc/torrevieja/master.m3u8', bitrate: '128kbps', description: 'Onda Cero - Torrevieja', color: '#008e43' },
+            { id: 'ondacero-elche', name: 'ONDA CERO ELCHE', url: 'https://atres-live.ondacero.es/live/delegaciones/oc/elche/master.m3u8', bitrate: '128kbps', description: 'Onda Cero - Elche', color: '#008e43' },
+            { id: 'ondacero-marina-baixa', name: 'ONDA CERO MARINA BAIXA', url: 'https://atres-live.ondacero.es/live/delegaciones/oc/villajoyosa/master.m3u8', bitrate: '128kbps', description: 'Onda Cero - Marina Baixa', color: '#008e43' },
+            { id: 'ondacero-torrevieja', name: 'ONDA CERO TORREVIEJA', url: 'https://atres-live.ondacero.es/live/delegaciones/oc/torrevieja/master.m3u8', bitrate: '128kbps', description: 'Onda Cero - Torrevieja / Vega Baja', color: '#008e43' },
+            { id: 'europa-fm-marina-alta', name: 'EUROPA FM MARINA ALTA', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/EFMAAC.m3u8', bitrate: 'AAC', description: 'Europa FM - Marina Alta', color: '#008e43' },
+            { id: 'radio-marca', name: 'RADIO MARCA', url: 'http://relay.stream.enacast-cloud.com:8000/marcalinkdelegaciones256.mp3', bitrate: '256kbps', description: 'El deporte en directo', color: '#FF0000' },
             { id: 'radio-marca-elche', name: 'RADIO MARCA ELCHE', url: 'https://directo.teleelx.es:8000/radio.mp3', bitrate: '128kbps', description: 'Radio Marca Elche - El deporte en directo', color: '#FF0000' },
             { id: 'radio-espana', name: 'RADIO ESPAÑA', url: 'https://stream-151.zeno.fm/7ywx2u45vv8uv', bitrate: '128kbps', description: 'Emisora generalista española', color: '#FFD700' },
             { id: 'intereconomia', name: 'RADIO INTERECONOMIA', url: 'https://streaming.intereconomia.com/siliconorg', bitrate: '128kbps', description: 'Información económica y financiera', color: '#004a99' },
@@ -352,11 +361,58 @@
             { id: 'ser-villena', name: 'SER VILLENA', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_VILLENA.mp3', bitrate: '128kbps', description: 'Cadena SER - Villena', color: '#333399' },
             { id: 'ser-orihuela', name: 'SER ORIHUELA', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ASO_ORIHUELAAAC.aac', bitrate: 'AAC', description: 'Cadena SER - Orihuela', color: '#333399' },
             { id: 'umh-radio', name: 'UMH RADIO', url: 'https://laradioendirecto.umh.es/;', bitrate: '128kbps', description: 'Radio de la Universidad Miguel Hernández', color: '#990000' },
-            { id: 'flamenca-alicante', name: 'FLAMENCA ALICANTE', url: 'https://stream2.mediasector.es/laflamenca-alicante-DAB', bitrate: 'DAB', description: 'La mejor música flamenca en Alicante', color: '#FF4500' },
-            { id: 'bikini-alicante', name: 'BIKINI ALICANTE', url: 'https://stream2.mediasector.es/bikini-alicante-BR384', bitrate: '384kbps', description: 'Música veraniega y éxitos en Alicante', color: '#00CED1' },
+            { id: 'flamenca-alicante', name: 'FLAMENCA ALICANTE', url: 'https://stream.emisorasmusicales.net/radio/8070/laflamenca.mp3', bitrate: '128kbps', description: 'La Flamenca - El mejor flamenco', color: '#FF4500' },
+            { id: 'bikini-alicante', name: 'BIKINI ALICANTE', url: 'https://stream.emisorasmusicales.net/radio/8030/bikinifm.mp3', bitrate: '128kbps', description: 'Bikini FM - Tu radio de verano', color: '#00CED1' },
             { id: 'es-radio-elche', name: 'ES RADIO ELCHE', url: 'https://ns6.emisionlocal.com/proxy/esradioelche?mp=/stream?hash=1677669549089', bitrate: '128kbps', description: 'esRadio Elche - La radio de Libertad Digital', color: '#E30613' },
+            { id: 'es-radio-alicante', name: 'esRadio ALICANTE', url: 'https://streaming12.elitecomunicacion.es:8260/stream', bitrate: '128kbps', description: 'esRadio Alicante - La radio de Libertad Digital', color: '#E30613' },
+            { id: 'los40-benidorm', name: 'LOS40 BENIDORM', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_ASO_BENIDORM.mp3', bitrate: '128kbps', description: 'LOS40 Benidorm - Todos los éxitos', color: '#FFD700' },
+            { id: 'cadena100-benidorm', name: 'CADENA 100 BENIDORM', url: 'https://str1.mediatelekom.net/proxy/cadena100/stream', bitrate: '128kbps', description: 'Cadena 100 Benidorm - La mejor variedad musical', color: '#333399' },
             { id: 'radio-interior-alicante', name: 'RADIO INTERIOR ALICANTE', url: 'https://stream.zeno.fm/lcbhskuckqjtv', bitrate: '128kbps', description: 'Radio Interior - La voz de Alicante', color: '#004a99' },
-            { id: 'vega-baja-radio', name: 'VEGA BAJA RADIO', url: 'https://stream.zeno.fm/3xnvzk9dztzuv', bitrate: '128kbps', description: 'Vega Baja Radio - La voz de la comarca', color: '#004a99' }
+            { id: 'vega-baja-radio', name: 'VEGA BAJA RADIO', url: 'https://stream.zeno.fm/3xnvzk9dztzuv', bitrate: '128kbps', description: 'Vega Baja Radio - La voz de la comarca', color: '#004a99' },
+            { id: 'mdt-radio', name: 'MDT RADIO', url: 'https://streams1.mdtradio.com:8443/mdtweb', bitrate: '128kbps', description: 'MDT Radio - La emisora del remember', color: '#FF0000' },
+            { id: 'remember-the-music', name: 'REMEMBER THE MUSIC FM', url: 'https://eu1.lhdserver.es:9041/stream', bitrate: '128kbps', description: 'Remember The Music FM - Solo éxitos', color: '#FFD700' },
+            { id: 'hot-fm-benidorm', name: 'HOT FM BENIDORM', url: 'https://ukstream.radiohost.co.uk/listen/hot_fm_dance/radio.mp3', bitrate: '128kbps', description: 'Hot FM Benidorm - Dance & Gold', color: '#FF4500' },
+            { id: 'denia-fm', name: 'DENIA FM', url: 'https://stream.serviciospararadios.es/listen/denia_fm/deniafm.mp3', bitrate: '128kbps', description: 'Dénia FM - La radio de la Marina Alta', color: '#00CED1' },
+            { id: 'torrevieja-radio', name: 'TORREVIEJA RADIO', url: 'https://sonicpanel.globalstream.pro:10973/;', bitrate: '128kbps', description: 'Torrevieja Radio - 107.1 FM', color: '#004a99' },
+            { id: 'relax-fm', name: 'RELAX FM', url: 'https://playerservices.streamtheworld.com/api/livestream-redirect/RELAX_FM.mp3', bitrate: '128kbps', description: 'Relax FM - Tu emisora de bienestar', color: '#00CED1' },
+            { id: 'activa-fm', name: 'ACTIVA FM', url: 'https://stream.emisorasmusicales.net/radio/8000/activafm.mp3', bitrate: '128kbps', description: 'Activa FM - La radio que te activa', color: '#FF4500' },
+            { id: 'mas-activa', name: '+ ACTIVA', url: 'https://stream.emisorasmusicales.net/radio/8110/mas-activa.mp3', bitrate: '128kbps', description: '+ Activa - Más música, más energía', color: '#FF4500' },
+            { id: 'la-mega-fm', name: 'LA MEGA FM', url: 'https://stream.emisorasmusicales.net/radio/8020/lamega.mp3', bitrate: '128kbps', description: 'La Mega FM - Solo éxitos', color: '#FFD700' },
+            { id: 'muybuena', name: 'MUYBUENA', url: 'https://stream.emisorasmusicales.net/radio/8010/muybuena.mp3', bitrate: '128kbps', description: 'MuyBuena - La radio que mejor suena', color: '#FFD700' },
+            { id: 'esencia-fm', name: 'ESENCIA FM', url: 'https://stream.emisorasmusicales.net/radio/8040/esenciafm.mp3', bitrate: '128kbps', description: 'Esencia FM - La radio de tus recuerdos', color: '#00CED1' },
+            { id: 'gold-fm', name: 'GOLD FM', url: 'https://stream.emisorasmusicales.net/radio/8050/goldfm.mp3', bitrate: '128kbps', description: 'Gold FM - Los mejores clásicos', color: '#FFD700' },
+            { id: 'rockstar', name: 'ROCKSTAR', url: 'https://stream.emisorasmusicales.net/radio/8060/rockstar.mp3', bitrate: '128kbps', description: 'RockStar - Puro Rock', color: '#FF0000' },
+            { id: 'la-que-suena', name: 'LA QUE SUENA', url: 'https://stream.emisorasmusicales.net/radio/8090/laquesuena.mp3', bitrate: '128kbps', description: 'La Que Suena - Éxitos actuales', color: '#FF4500' },
+            { id: 'la-indie', name: 'LA INDIE', url: 'https://stream.emisorasmusicales.net/radio/8130/laindie-valencia.mp3', bitrate: '128kbps', description: 'La Indie - Música alternativa', color: '#00CED1' },
+            { id: 'motiva-fm', name: 'MOTIVA FM', url: 'https://stream.motivafm.com/listen/motiva/motiva.mp3', bitrate: '128kbps', description: 'Motiva FM - La radio que te mueve', color: '#FF4500' },
+            { id: 'corazon-fm', name: 'CORAZÓN FM', url: 'https://stream.emisorasmusicales.net/listen/corazon_fm/corazonfm.mp3', bitrate: '128kbps', description: 'Corazón FM - Música con sentimiento', color: '#FF4500' },
+            { id: 'comboi', name: 'COMBOI', url: 'https://stream.emisorasmusicales.net/listen/comboi/comboi.mp3', bitrate: '128kbps', description: 'Comboi - La radio de la fiesta', color: '#FFD700' },
+            { id: 'hallo-fm', name: 'HALLO FM', url: 'https://stream.emisorasmusicales.net/listen/hallo_fm/hallofm.mp3', bitrate: '128kbps', description: 'Hallo FM - Radio internacional', color: '#00CED1' },
+            { id: 'sol-latino', name: 'SOL LATINO', url: 'https://stream.emisorasmusicales.net/listen/sol-latino/sol-latino.mp3', bitrate: '128kbps', description: 'Sol Latino - Ritmos calientes', color: '#FFD700' },
+            { id: 'hola-pop', name: 'HOLA POP', url: 'https://stream.emisorasmusicales.net/listen/hola-pop/holapop.mp3', bitrate: '128kbps', description: 'Hola Pop - El mejor pop', color: '#FF4500' },
+            { id: 'party-fm', name: 'PARTY FM', url: 'https://stream.emisorasmusicales.net/listen/party_fm/partyfm.mp3', bitrate: '128kbps', description: 'Party FM - La fiesta no para', color: '#FF4500' },
+            { id: 'remember-radio', name: 'REMEMBER RADIO', url: 'https://sm1.streamingmovil.com:2199/proxy/webrr?mp=/WEB', bitrate: '128kbps', description: 'Remember Radio - Los clásicos del dance', color: '#FFD700' },
+            { id: 'spektra-fm', name: 'SPEKTRA FM', url: 'https://stm2.emiteonline.com:9008/spektrafm#.mp3', bitrate: '128kbps', description: 'Spektra FM - Música electrónica', color: '#FF4500' },
+            { id: 'codigo-fm', name: 'CÓDIGO FM', url: 'https://cloudstream2036.conectarhosting.com/8422/stream', bitrate: '128kbps', description: 'Código FM - Radio de baile', color: '#FFD700' },
+            { id: 'leo-radio-benidorm', name: 'LEO RADIO BENIDORM', url: 'https://stream.netservers.ovh:8443/leoradiofm.ogg', bitrate: '128kbps', description: 'LEO Radio Benidorm - La radio local', color: '#00CED1' },
+            { id: 'plaza-radio', name: 'PLAZA RADIO', url: 'https://stream1.solstreaming.com:8112/stream', bitrate: '128kbps', description: 'Plaza Radio - La voz de Valencia', color: '#333399' },
+            { id: 'radio-ibi', name: 'RADIO IBI', url: 'https://streaming.enacast.com:8000/radioibiSD.mp3', bitrate: '128kbps', description: 'Radio Ibi - La radio de tu pueblo', color: '#FF4500' },
+            { id: 'sol-fm-radio', name: 'SOL FM RADIO', url: 'https://eu1.lhdserver.es:9135/stream', bitrate: '128kbps', description: 'SOL FM Radio - 95.8 FM', color: '#FFD700' },
+            { id: 'radio-monovar', name: 'RADIO MONÓVAR', url: 'https://radioserver12.profesionalhosting.com/proxy/pkg155112/stream', bitrate: '128kbps', description: 'Radio Monóvar - La radio de Monóvar', color: '#00CED1' },
+            { id: 'xtra-fm', name: 'XTRA FM', url: 'https://hls1.eu.peppermindmedia.com/xtrafm/south/XtraFMSouth.m3u8', bitrate: 'HLS', description: 'Xtra FM - Costa Blanca', color: '#FF4500' },
+            { id: 'onda-15-radio', name: 'ONDA 15 RADIO', url: 'https://streaming12.elitecomunicacion.es:8628/stream', bitrate: '128kbps', description: 'Onda 15 Radio - Tu radio cercana', color: '#004a99' },
+            { id: 'costa-fm-alicante', name: 'COSTA FM ALICANTE', url: 'https://stream.costafm.es/listen/costafm/radio.mp3', bitrate: '128kbps', description: 'Costa FM Alicante - La radio de la costa', color: '#00CED1' },
+            { id: 'onda-azul-torrevieja', name: 'ONDA AZUL TORREVIEJA', url: 'https://usa3.lhdserver.es:8199/stream?type=.mp3', bitrate: '128kbps', description: 'Onda Azul Torrevieja - La radio de Torrevieja', color: '#004a99' },
+            { id: 'radio-onda-15-castalla', name: 'RADIO ONDA 15 CASTALLA', url: 'https://azc.standfy.com/radio/8200/onda15', bitrate: '128kbps', description: 'Radio Onda 15 Castalla', color: '#004a99' },
+            { id: 'cassette-fm', name: 'CASSETTE FM', url: 'https://stream.costafm.es/listen/cassettefm/radio.mp3', bitrate: '128kbps', description: 'Cassette FM - Solo clásicos', color: '#FFD700' },
+            { id: 'radio-90fm', name: 'RADIO 90FM', url: 'https://stream.radio90.fm:2002/web', bitrate: '128kbps', description: 'Radio 90FM - La radio de los 90', color: '#FF4500' },
+            { id: 'radio-malibu', name: 'RADIO MALIBÚ', url: 'https://stream.costafm.es/listen/malibu_radio_102.3/radio.mp3', bitrate: '128kbps', description: 'Radio Malibú - 102.3 FM', color: '#00CED1' },
+            { id: 'litoral-fm', name: 'LITORAL FM', url: 'https://stream.emisorasmusicales.net/radio/8310/litoralfm.mp3', bitrate: '128kbps', description: 'Litoral FM - La radio de la costa', color: '#00CED1' },
+            { id: 'litoral-oro', name: 'LITORAL ORO', url: 'https://stream.emisorasmusicales.net/listen/litoral_oro/litoral-oro.mp3', bitrate: '128kbps', description: 'Litoral Oro - Los mejores clásicos', color: '#FFD700' },
+            { id: 'radio-calp', name: 'RÀDIO CALP', url: 'https://stream.emisorasmusicales.net/listen/radio-calp/radio-calp.mp3', bitrate: '128kbps', description: 'Ràdio Calp - La radio de Calp', color: '#00CED1' },
+            { id: 'onda-40-music', name: 'ONDA 40 MUSIC', url: 'https://radioonda40music.es:8000/radio.mp3', bitrate: '128kbps', description: 'Onda 40 Music - La mejor música', color: '#FF4500' },
+            { id: 'v30-radio', name: 'V30 RADIO', url: 'https://streaming12.elitecomunicacion.es:8604/stream', bitrate: '128kbps', description: 'V30 Radio - Onda Valencia', color: '#333399' },
+            { id: 'vox-uji-radio', name: 'VOX UJI RÀDIO', url: 'https://radiouji.uji.es:8443/high.mp3', bitrate: '128kbps', description: 'Vox UJI Ràdio - Universitat Jaume I', color: '#990000' }
         ];
 
         // --- STATE ---
@@ -457,7 +513,7 @@
                 toggleFavoritesBtn.classList.toggle('bg-cyan-900/40', showFavorites);
                 toggleFavoritesBtn.classList.toggle('text-[#00f3ff]', showFavorites);
                 toggleFavoritesBtn.classList.toggle('border-[#00f3ff]', showFavorites);
-                document.getElementById('playlist-title').textContent = showFavorites ? 'FAVORITE CHANNELS' : 'STREAM DE RADIO EN ALICANTE';
+                document.getElementById('playlist-title').textContent = showFavorites ? 'FAVORITE CHANNELS' : 'EMISORAS DE RADIO EN LA PROVINCIA DE ALICANTE';
                 renderStations();
             });
             timerBtn.addEventListener('click', () => timerModal.classList.remove('hidden'));
