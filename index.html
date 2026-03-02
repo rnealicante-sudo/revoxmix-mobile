@@ -259,6 +259,14 @@
             <div class="winamp-window flex flex-col flex-1 overflow-hidden min-h-0">
                 <div class="winamp-title-bar flex justify-between items-center">
                     <span id="playlist-title">EMISORAS DE RADIO EN LA PROVINCIA DE ALICANTE</span>
+                    <span id="search-count" class="text-[7px] text-[#00f3ff] font-mono hidden">FOUND: 0</span>
+                </div>
+                <div id="search-container" class="bg-[#020617] p-1.5 border-b border-cyan-900/30 flex items-center gap-2 hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00f3ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 ml-1"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input id="search-input" type="text" placeholder="SEARCH STATION..." class="flex-1 bg-transparent border-none outline-none text-[#00f3ff] text-[10px] font-mono placeholder:text-cyan-900 uppercase" />
+                    <button id="close-search-btn" class="p-1 text-cyan-900 hover:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
                 </div>
                 <div id="playlist-container" class="flex-1 overflow-y-auto p-1 hide-scrollbar bg-[#0f172a]">
                     <div id="station-list" class="flex flex-col gap-[1px]">
@@ -277,6 +285,10 @@
                     <button id="stop-btn" class="winamp-btn px-4 py-3 text-[12px]">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect width="18" height="18" x="3" y="3" rx="2"></rect></svg>
                         STOP
+                    </button>
+                    <button id="search-btn" class="winamp-btn px-4 py-3 text-[12px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        BUSCAR
                     </button>
                     <button id="rec-btn" class="winamp-btn flex-1 py-3 text-[12px] border-red-900/50">
                         <div id="rec-dot" class="w-2 h-2 rounded-full bg-red-600 mr-1 hidden animate-pulse"></div>
@@ -453,6 +465,7 @@
         let mediaRecorder = null;
         let recordedChunks = [];
         let isRecording = false;
+        let searchQuery = '';
         let streamDestination = null;
         let pcmDataLeft = [];
         let pcmDataRight = [];
@@ -492,6 +505,11 @@
         const recBtn = document.getElementById('rec-btn');
         const recDot = document.getElementById('rec-dot');
         const recText = document.getElementById('rec-text');
+        const searchBtn = document.getElementById('search-btn');
+        const searchContainer = document.getElementById('search-container');
+        const searchInput = document.getElementById('search-input');
+        const closeSearchBtn = document.getElementById('close-search-btn');
+        const searchCount = document.getElementById('search-count');
         const recModal = document.getElementById('rec-modal');
         
         // Append audio tag to DOM (required for some browsers to analyze audio)
@@ -544,6 +562,31 @@
             timerBtn.addEventListener('click', () => timerModal.classList.remove('hidden'));
             recBtn.addEventListener('click', toggleRecording);
             document.getElementById('reload-btn').addEventListener('click', () => window.location.reload());
+
+            searchBtn.addEventListener('click', () => {
+                searchContainer.classList.toggle('hidden');
+                if (!searchContainer.classList.contains('hidden')) {
+                    searchInput.focus();
+                } else {
+                    searchQuery = '';
+                    searchInput.value = '';
+                    searchCount.classList.add('hidden');
+                    renderStations();
+                }
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase();
+                renderStations();
+            });
+
+            closeSearchBtn.addEventListener('click', () => {
+                searchQuery = '';
+                searchInput.value = '';
+                searchContainer.classList.add('hidden');
+                searchCount.classList.add('hidden');
+                renderStations();
+            });
 
             // VU Meter Setup
             setupVUMeters();
@@ -790,8 +833,21 @@
 
         function renderStations() {
             const list = showFavorites ? favorites : STATIONS;
+            const filteredList = list.filter(s => {
+                const name = s.name.toLowerCase();
+                const desc = s.description.toLowerCase();
+                return name.includes(searchQuery) || desc.includes(searchQuery);
+            });
+
+            if (searchQuery) {
+                searchCount.textContent = `FOUND: ${filteredList.length}`;
+                searchCount.classList.remove('hidden');
+            } else {
+                searchCount.classList.add('hidden');
+            }
+
             stationListEl.innerHTML = '';
-            list.forEach((station, index) => {
+            filteredList.forEach((station, index) => {
                 const isActive = currentStation.id === station.id;
                 const isFav = favorites.some(f => f.id === station.id);
                 
