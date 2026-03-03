@@ -143,7 +143,7 @@
                 <div class="winamp-title-bar flex justify-between">
                     <div class="flex items-center gap-1">
                         <div class="w-2 h-2 bg-yellow-400 rotate-45"></div>
-                        <span class="truncate tracking-widest uppercase">REVOXMIX v5.8 - COMPACT MASTER</span>
+                        <span class="truncate tracking-widest uppercase">REVOXMIX v5.8 - BY RASKACHAN</span>
                     </div>
                     <div class="flex gap-2">
                         <span id="channel-indicator" class="text-[8px] text-gray-400 font-bold uppercase tracking-widest font-mono">CH-01</span>
@@ -258,7 +258,7 @@
             <!-- PLAYLIST -->
             <div class="winamp-window flex flex-col flex-1 overflow-hidden min-h-0">
                 <div class="winamp-title-bar flex justify-between items-center">
-                    <span id="playlist-title">EMISORAS DE RADIO EN LA PROVINCIA DE ALICANTE</span>
+                    <span id="playlist-title">STREAM RADIOS EN ALICANTE</span>
                     <span id="search-count" class="text-[7px] text-[#00f3ff] font-mono hidden">FOUND: 0</span>
                 </div>
                 <div id="search-container" class="bg-[#020617] p-1.5 border-b border-cyan-900/30 flex items-center gap-2 hidden">
@@ -556,7 +556,7 @@
                 toggleFavoritesBtn.classList.toggle('bg-cyan-900/40', showFavorites);
                 toggleFavoritesBtn.classList.toggle('text-[#00f3ff]', showFavorites);
                 toggleFavoritesBtn.classList.toggle('border-[#00f3ff]', showFavorites);
-                document.getElementById('playlist-title').textContent = showFavorites ? 'FAVORITE CHANNELS' : 'EMISORAS DE RADIO EN LA PROVINCIA DE ALICANTE';
+                document.getElementById('playlist-title').textContent = showFavorites ? 'FAVORITE CHANNELS' : 'STREAM RADIOS EN ALICANTE';
                 renderStations();
             });
             timerBtn.addEventListener('click', () => timerModal.classList.remove('hidden'));
