@@ -140,14 +140,23 @@
         <div class="p-1.5 space-y-1.5 max-w-lg mx-auto w-full flex-1 flex flex-col overflow-hidden">
             <!-- MASTER RACK WINDOW -->
             <div class="winamp-window flex flex-col shrink-0">
-                <div class="winamp-title-bar flex justify-between">
-                    <div class="flex items-center gap-1">
+                <div class="winamp-title-bar relative flex justify-between items-center px-1">
+                    <div class="flex items-center gap-1 z-10">
                         <div class="w-2 h-2 bg-yellow-400 rotate-45"></div>
                         <span class="truncate tracking-widest uppercase">REVOXMIX v5.8</span>
-                        <span id="clock" class="tracking-widest uppercase ml-4">00:00:00</span>
                     </div>
-                    <div class="flex gap-2">
-                        <span id="channel-indicator" class="text-[8px] text-gray-400 font-bold uppercase tracking-widest font-mono">CH-01</span>
+                    
+                    <span id="clock-container" class="absolute left-1/2 -translate-x-1/2 tracking-widest uppercase whitespace-nowrap flex items-center gap-3">
+                        <span id="clock">00:00:00</span>
+                        <span id="weather" class="hidden flex items-center">
+                            <span class="opacity-40 mr-2">|</span>
+                            <span class="mr-1">ALICANTE</span>
+                            <span id="temp-value">--</span>°C
+                        </span>
+                    </span>
+
+                    <div class="flex gap-2 items-center z-10">
+                        <span id="channel-indicator" class="text-[8px] font-bold uppercase tracking-widest font-mono">CH-01</span>
                         <div class="w-2.5 h-2.5 bg-[#ccc] border border-black/20"></div>
                     </div>
                 </div>
@@ -256,11 +265,13 @@
                 </div>
             </div>
 
-            <!-- PLAYLIST -->
             <div class="winamp-window flex flex-col flex-1 overflow-hidden min-h-0">
-                <div class="winamp-title-bar flex justify-between items-center">
-                    <span id="playlist-title">RADIOS ONLINE</span>
-                    <span id="search-count" class="text-[7px] text-[#00f3ff] font-mono hidden">FOUND: 0</span>
+                <div class="winamp-title-bar relative flex justify-between items-center">
+                    <div class="flex-1"></div>
+                    <span id="playlist-title" class="absolute left-1/2 -translate-x-1/2 whitespace-nowrap uppercase tracking-widest">EMISORAS DE RADIO ON-LINE</span>
+                    <div class="flex items-center gap-2 z-10">
+                        <span id="search-count" class="text-[7px] text-[#00f3ff] font-mono hidden">FOUND: 0</span>
+                    </div>
                 </div>
                 <div id="search-container" class="bg-[#020617] p-1.5 border-b border-cyan-900/30 flex items-center gap-2 hidden">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00f3ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 ml-1"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -528,8 +539,29 @@
                 const clockEl = document.getElementById('clock');
                 if (clockEl) clockEl.textContent = timeString;
             }
+
+            async function fetchWeather() {
+                try {
+                    const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=38.3452&longitude=-0.4815&current_weather=true');
+                    const data = await response.json();
+                    if (data.current_weather) {
+                        const tempValue = document.getElementById('temp-value');
+                        const weatherContainer = document.getElementById('weather');
+                        if (tempValue && weatherContainer) {
+                            tempValue.textContent = Math.round(data.current_weather.temperature);
+                            weatherContainer.classList.remove('hidden');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching weather:', error);
+                }
+            }
+
             setInterval(updateClock, 1000);
             updateClock();
+            
+            fetchWeather();
+            setInterval(fetchWeather, 600000); // 10 mins
             
             // Interaction listeners to unlock audio on iOS
             const unlocker = () => {
@@ -566,7 +598,7 @@
                 toggleFavoritesBtn.classList.toggle('bg-cyan-900/40', showFavorites);
                 toggleFavoritesBtn.classList.toggle('text-[#00f3ff]', showFavorites);
                 toggleFavoritesBtn.classList.toggle('border-[#00f3ff]', showFavorites);
-                document.getElementById('playlist-title').textContent = showFavorites ? 'FAVORITE CHANNELS' : 'RADIOS ONLINE';
+                document.getElementById('playlist-title').textContent = showFavorites ? 'FAVORITE CHANNELS' : 'EMISORAS DE RADIO ON-LINE';
                 renderStations();
             });
             timerBtn.addEventListener('click', () => timerModal.classList.remove('hidden'));
